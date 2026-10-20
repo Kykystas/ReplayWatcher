@@ -44,5 +44,6 @@ if ($Test) {
 if ($Preview) {
     Start-Process -FilePath $exe -ArgumentList '--preview' -WindowStyle Hidden -Wait
     Start-Process -FilePath $exe -ArgumentList '--preview','--microphone' -WindowStyle Hidden -Wait
+    Start-Process -FilePath $exe -ArgumentList '--preview','--microphone','--english' -WindowStyle Hidden -Wait
 }
 Write-Output "Built: $exe"

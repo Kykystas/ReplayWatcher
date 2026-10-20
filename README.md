@@ -1,10 +1,10 @@
-# Replay Watcher 0.3.8
+# Replay Watcher 0.4.0
 
 A simple Windows app that restores NVIDIA Instant Replay after it turns off and optionally checks your microphone.
 
 Made by Kykystas with the help of AI
 
-**Status: portable preview release.** This project is not affiliated with NVIDIA and uses undocumented overlay data. The app currently has a Russian-language interface, a red-and-black theme, and a green pixel-art chameleon icon.
+**Status: portable preview release.** This project is not affiliated with NVIDIA and uses undocumented overlay data. The app has Russian and English interfaces, a red-and-black theme, and a green pixel-art chameleon icon.
 
 ## Getting started
 
@@ -13,6 +13,8 @@ Extract the **entire** archive and run `ReplayWatcher.exe`. Both NAudio DLL file
 Requirements: Windows 10/11 x64, .NET Framework 4.8, and NVIDIA App or GeForce Experience with the overlay enabled. Audio playback uses Windows Media Foundation codecs; Windows N editions may require the Media Feature Pack.
 
 On first launch, automatic replay recovery is enabled and microphone monitoring is disabled. Windows startup can be enabled separately in the app. If Windows or an antivirus blocks the file, read the Windows and antivirus warnings section below.
+
+Use the RU/EN slider in the top-right corner to switch languages instantly. Your choice is saved for the next launch.
 
 ## Instant Replay
 
@@ -58,7 +60,7 @@ Current status is kept in memory: `status.txt` is no longer created or updated. 
 
 ### SmartScreen and code signing
 
-Version 0.3.8 **does not have a publisher's digital signature**. A "Windows protected your PC" warning about an unrecognized app is a SmartScreen reputation warning. It is not, by itself, a detection of a specific virus, and it does not establish that a file is safe. Microsoft considers the reputation of both the file and its publisher; even a valid signature does not guarantee that a new build will show no warnings. [Microsoft's explanation](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation).
+Version 0.4.0 **does not have a publisher's digital signature**. A "Windows protected your PC" warning about an unrecognized app is a SmartScreen reputation warning. It is not, by itself, a detection of a specific virus, and it does not establish that a file is safe. Microsoft considers the reputation of both the file and its publisher; even a valid signature does not guarantee that a new build will show no warnings. [Microsoft's explanation](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation).
 
 ### What the app does
 
@@ -71,6 +73,11 @@ Version 0.3.8 **does not have a publisher's digital signature**. A "Windows prot
 ## License
 
 MIT License. Copyright (c) 2026 Kykystas. See `LICENSE` for the full license and `THIRD-PARTY-NOTICES.txt` for third-party notices.
+
+## Changes in 0.4.0
+
+- Added a RU/EN language slider in the top-right corner.
+- Language changes apply immediately to the interface and tray menu and are remembered between launches.
 
 ## Changes in 0.3.8
 
