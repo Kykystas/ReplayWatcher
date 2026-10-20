@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -35,8 +35,9 @@ namespace ReplayWatcher
                 Application.EnableVisualStyles(); Application.SetCompatibleTextRenderingDefault(false);
                 if (args.Contains("--preview"))
                 {
-                    using (MainForm form = new MainForm(new Settings(), null, false, true)) form.RenderPreview(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, args.Contains("--microphone") ? "preview-microphone.png" : "preview.png"), args.Contains("--microphone"));
-                    using (var dialog = new RecordingTestDialog(true)) dialog.RenderPreview(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "preview-recording.png"));
+                    string suffix = args.Contains("--english") ? "-en" : "";
+                    using (MainForm form = new MainForm(new Settings { Language = args.Contains("--english") ? "en" : "ru" }, null, false, true)) form.RenderPreview(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, (args.Contains("--microphone") ? "preview-microphone" : "preview") + suffix + ".png"), args.Contains("--microphone"));
+                    using (var dialog = new RecordingTestDialog(true)) dialog.RenderPreview(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "preview-recording" + suffix + ".png"));
                     return 0;
                 }
                 bool created;
@@ -50,8 +51,8 @@ namespace ReplayWatcher
             }
             catch (Exception ex)
             {
-                Storage.Log("Ошибка запуска: " + ex.Message);
-                if (!args.Contains("--background")) MessageBox.Show("Не удалось запустить Replay Watcher.\n" + ex.Message, "Replay Watcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Storage.Log(L.T("Ошибка запуска: ") + ex.Message);
+                if (!args.Contains("--background")) MessageBox.Show(L.T("Не удалось запустить Replay Watcher.\n") + ex.Message, "Replay Watcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return 1;
             }
         }
@@ -94,6 +95,7 @@ namespace ReplayWatcher
                 Assert(CaptureEvidence.FindManualPath("SetOutputLocation :C:\\Clips\\test.mp4, bSplitFiles(0)\nStartManualCapture") == @"C:\Clips\test.mp4", "manual output file matched to recording start");
                 Assert(CaptureEvidence.FindManualPath("SetOutputLocation :C:\\Clips\\test.DVR.mp4, bSplitFiles(0)\nStartManualCapture") == null, "instant replay file cannot be selected as manual test recording");
                 TestTrayIcons();
+                TestLanguages();
                 TestAudio();
                 File.WriteAllLines(Path.Combine(Storage.Root, "self-test.txt"), passed.ToArray()); return 0;
             }
@@ -128,6 +130,47 @@ namespace ReplayWatcher
                         Assert(colored > 0 && corrupt == 0, "Windows native tray rendering: " + (state == 0 ? "green" : state == 1 ? "red" : "gray") + " palette without corruption");
                     }
             }
+        }
+        private static IEnumerable<Control> AllControls(Control root)
+        {
+            yield return root;
+            foreach (Control child in root.Controls)
+                foreach (Control descendant in AllControls(child)) yield return descendant;
+        }
+        private static void TestLanguages()
+        {
+            try
+            {
+                Settings old = Storage.Json.Deserialize<Settings>("{\"AutoRestore\":false,\"MicrophoneId\":\"legacy-device\"}");
+                Assert(old.Language == "ru" && old.MicrophoneId == "legacy-device" && !old.AutoRestore, "legacy settings retain microphone and recovery preferences");
+                var config = new Settings { Language = "en", MicrophoneId = "test-device", AutoRestore = false };
+                var restored = Storage.Json.Deserialize<Settings>(Storage.Json.Serialize(config));
+                Assert(restored.Language == "en" && L.Normalize(null) == "ru" && L.Normalize("unsupported") == "ru", "language preference persists with a supported fallback");
+                Application.EnableVisualStyles();
+                using (var form = new MainForm(config, null, false, true))
+                {
+                    form.Show();
+                    try
+                    {
+                        var toggle = AllControls(form).OfType<LanguageSwitch>().Single();
+                        Assert(toggle.Checked && !AllControls(form).Any(c => System.Text.RegularExpressions.Regex.IsMatch(c.Text, @"\p{IsCyrillic}")), "English main window has no Russian captions");
+                        toggle.Checked = false;
+                        Assert(config.Language == "ru" && AllControls(form).Any(c => c.Text == L.T("Проверить сейчас")), "slider switches back to Russian without restarting");
+                        toggle.Checked = true;
+                        Assert(config.Language == "en" && config.MicrophoneId == "test-device" && !config.AutoRestore && !AllControls(form).Any(c => System.Text.RegularExpressions.Regex.IsMatch(c.Text, @"\p{IsCyrillic}")), "language switch preserves settings and immediately updates captions");
+                        using (var recording = new RecordingTestDialog(true))
+                        {
+                            recording.Show();
+                            try { Assert(!AllControls(recording).Any(c => System.Text.RegularExpressions.Regex.IsMatch(c.Text, @"\p{IsCyrillic}")), "recording test window follows the selected language"); }
+                            finally { recording.Close(); }
+                        }
+                        var decision = new RecoveryPolicy().Evaluate(null, true, true, true, DateTime.UtcNow);
+                        Assert(decision.Text == "Status unknown — no toggle will be sent." && !decision.Attempt, "recovery messages follow the selected language without changing policy");
+                    }
+                    finally { form.Close(); }
+                }
+            }
+            finally { L.Language = "ru"; }
         }
         private static void TestAudio()
         {

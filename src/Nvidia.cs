@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -14,7 +14,7 @@ namespace ReplayWatcher
         internal bool Running;
         internal bool? Replay;
         internal int[] Hotkey;
-        internal string Description { get { return OverlayPath == null ? "NVIDIA Overlay не найден" : Path.GetDirectoryName(OverlayPath); } }
+        internal string Description { get { return OverlayPath == null ? L.T("NVIDIA Overlay не найден") : Path.GetDirectoryName(OverlayPath); } }
     }
 
     internal static class Nvidia
@@ -57,7 +57,7 @@ namespace ReplayWatcher
         }
         internal static string ShortcutText(int[] keys)
         {
-            if (keys == null) return "Не назначено";
+            if (keys == null) return L.T("Не назначено");
             return String.Join(" + ", keys.Select(k => k == 16 ? "Shift" : k == 17 ? "Ctrl" : k == 18 ? "Alt" : ((System.Windows.Forms.Keys)k).ToString()));
         }
         internal static bool IsCaptureProcess(int id)

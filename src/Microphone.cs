@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using NAudio.CoreAudioApi;
@@ -81,7 +81,7 @@ namespace ReplayWatcher
             try
             {
                 if ((DateTime.UtcNow - refreshed).TotalSeconds > 3 || selection != id) Refresh(id);
-                if (selected == null) return new MicSnapshot { Problem = true, Device = "Микрофон не найден", Text = "Подключите микрофон или выберите другое устройство.", Detail = "Проверка не открывает запись и не сохраняет звук." };
+                if (selected == null) return new MicSnapshot { Problem = true, Device = L.T("Микрофон не найден"), Text = L.T("Подключите микрофон или выберите другое устройство."), Detail = L.T("Проверка не открывает запись и не сохраняет звук.") };
                 MicSnapshot result = new MicSnapshot { DeviceAvailable = true, Device = selected.FriendlyName, Peak = selected.AudioMeterInformation.MasterPeakValue, Muted = selected.AudioEndpointVolume.Mute || selected.AudioEndpointVolume.MasterVolumeLevelScalar <= 0.001f };
                 foreach (AudioSessionControl session in sessions)
                     try
@@ -93,18 +93,18 @@ namespace ReplayWatcher
                     catch { }
                 if (result.Peak > 0.0035f) lastSignal = DateTime.UtcNow;
                 bool recent = lastSignal != DateTime.MinValue && (DateTime.UtcNow - lastSignal).TotalSeconds < 5;
-                if (result.Muted) { result.Text = "Микрофон отключён или громкость равна нулю"; result.Problem = true; }
-                else if (micMode == "off") { result.Text = "В настройках NVIDIA микрофон выключен"; result.Problem = true; }
-                else if (result.NvidiaPeak > 0.0035f) result.Text = "В аудиосеансе NVIDIA есть сигнал";
-                else if (result.NvidiaActive) result.Text = recent ? "Микрофон слышен · сеанс NVIDIA активен" : "Сеанс NVIDIA активен · сейчас тихо";
-                else result.Text = recent ? "Микрофон слышен · активный сеанс NVIDIA не найден" : "Сейчас тихо · активный сеанс NVIDIA не найден";
-                result.Detail = micMode == "ptt" ? "В NVIDIA выбран режим «Нажми и говори». Удерживайте свою клавишу для проверки." : "Индикатор показывает входящий сигнал. Чтобы проверить звук в видео, нажмите «Проверить клип».";
+                if (result.Muted) { result.Text = L.T("Микрофон отключён или громкость равна нулю"); result.Problem = true; }
+                else if (micMode == "off") { result.Text = L.T("В настройках NVIDIA микрофон выключен"); result.Problem = true; }
+                else if (result.NvidiaPeak > 0.0035f) result.Text = L.T("В аудиосеансе NVIDIA есть сигнал");
+                else if (result.NvidiaActive) result.Text = recent ? L.T("Микрофон слышен · сеанс NVIDIA активен") : L.T("Сеанс NVIDIA активен · сейчас тихо");
+                else result.Text = recent ? L.T("Микрофон слышен · активный сеанс NVIDIA не найден") : L.T("Сейчас тихо · активный сеанс NVIDIA не найден");
+                result.Detail = micMode == "ptt" ? L.T("В NVIDIA выбран режим «Нажми и говори». Удерживайте свою клавишу для проверки.") : L.T("Индикатор показывает входящий сигнал. Чтобы проверить звук в видео, нажмите «Проверить клип».");
                 return result;
             }
             catch (Exception ex)
             {
                 refreshed = DateTime.MinValue;
-                return new MicSnapshot { Problem = true, Device = "Микрофон недоступен", Text = "Не удалось прочитать состояние микрофона", Detail = "Проверьте подключение и разрешения Windows. " + ex.Message };
+                return new MicSnapshot { Problem = true, Device = L.T("Микрофон недоступен"), Text = L.T("Не удалось прочитать состояние микрофона"), Detail = L.T("Проверьте подключение и разрешения Windows. ") + ex.Message };
             }
         }
         public void Dispose()

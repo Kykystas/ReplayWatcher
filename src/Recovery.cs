@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -48,15 +48,15 @@ namespace ReplayWatcher
         private DateTime offSince = DateTime.MinValue, nextAttempt = DateTime.MinValue;
         internal RecoveryDecision Evaluate(bool? state, bool enabled, bool running, bool bound, DateTime now)
         {
-            if (!state.HasValue) { offSince = DateTime.MinValue; return new RecoveryDecision { Text = "Состояние неизвестно — переключение не отправляется." }; }
-            if (state.Value) { offSince = DateTime.MinValue; return new RecoveryDecision { Text = enabled ? "Автовосстановление активно · проверка каждые 2 секунды" : "Автовосстановление выключено" }; }
-            if (!enabled) return new RecoveryDecision { Text = "Автовосстановление выключено" };
-            if (!running) return new RecoveryDecision { Text = "Включите оверлей в NVIDIA App или GeForce Experience." };
-            if (!bound) return new RecoveryDecision { Text = "В NVIDIA не назначено сочетание включения повтора." };
+            if (!state.HasValue) { offSince = DateTime.MinValue; return new RecoveryDecision { Text = L.T("Состояние неизвестно — переключение не отправляется.") }; }
+            if (state.Value) { offSince = DateTime.MinValue; return new RecoveryDecision { Text = enabled ? L.T("Автовосстановление активно · проверка каждые 2 секунды") : L.T("Автовосстановление выключено") }; }
+            if (!enabled) return new RecoveryDecision { Text = L.T("Автовосстановление выключено") };
+            if (!running) return new RecoveryDecision { Text = L.T("Включите оверлей в NVIDIA App или GeForce Experience.") };
+            if (!bound) return new RecoveryDecision { Text = L.T("В NVIDIA не назначено сочетание включения повтора.") };
             if (offSince == DateTime.MinValue) offSince = now;
-            if ((now - offSince).TotalSeconds < 3) return new RecoveryDecision { Text = "Повтор выключен. Готовлю восстановление…" };
-            if (now < nextAttempt) return new RecoveryDecision { Text = "Ожидаю подтверждения. Следующая попытка через " + (int)Math.Ceiling((nextAttempt - now).TotalSeconds) + " сек." };
-            return new RecoveryDecision { Attempt = true, Text = "Пробую включить повтор…" };
+            if ((now - offSince).TotalSeconds < 3) return new RecoveryDecision { Text = L.T("Повтор выключен. Готовлю восстановление…") };
+            if (now < nextAttempt) return new RecoveryDecision { Text = L.T("Ожидаю подтверждения. Следующая попытка через ") + (int)Math.Ceiling((nextAttempt - now).TotalSeconds) + L.T(" сек.") };
+            return new RecoveryDecision { Attempt = true, Text = L.T("Пробую включить повтор…") };
         }
         internal void Attempted(DateTime now) { nextAttempt = now.AddSeconds(10); }
     }

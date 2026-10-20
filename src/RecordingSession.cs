@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -48,18 +48,18 @@ namespace ReplayWatcher
         private DateTime requestedAt;
         internal async Task Start()
         {
-            if (OwnsRecording) throw new InvalidOperationException("Пробная запись уже идёт.");
+            if (OwnsRecording) throw new InvalidOperationException(L.T("Пробная запись уже идёт."));
             NvidiaSnapshot nvidia = Nvidia.Discover();
-            if (!nvidia.Running) throw new InvalidOperationException("Включите оверлей NVIDIA.");
+            if (!nvidia.Running) throw new InvalidOperationException(L.T("Включите оверлей NVIDIA."));
             bool? current = CaptureEvidence.ManualState();
-            if (current == true) throw new InvalidOperationException("Уже идёт другая запись NVIDIA. Сначала остановите её — приложение не будет её прерывать.");
-            if (!current.HasValue) throw new InvalidOperationException("NVIDIA не предоставила состояние записи. Проверьте, что оверлей и Instant Replay запущены.");
+            if (current == true) throw new InvalidOperationException(L.T("Уже идёт другая запись NVIDIA. Сначала остановите её — приложение не будет её прерывать."));
+            if (!current.HasValue) throw new InvalidOperationException(L.T("NVIDIA не предоставила состояние записи. Проверьте, что оверлей и Instant Replay запущены."));
             keys = Nvidia.ReadHotkey("ManualHKey");
-            if (keys == null) throw new InvalidOperationException("В NVIDIA не назначено сочетание для обычной записи.");
-            if (!Keyboard.Ready(keys)) throw new InvalidOperationException("Отпустите служебные клавиши и повторите попытку.");
-            if (CaptureEvidence.ManualState() != false) throw new InvalidOperationException("Состояние записи изменилось. Повторите проверку.");
+            if (keys == null) throw new InvalidOperationException(L.T("В NVIDIA не назначено сочетание для обычной записи."));
+            if (!Keyboard.Ready(keys)) throw new InvalidOperationException(L.T("Отпустите служебные клавиши и повторите попытку."));
+            if (CaptureEvidence.ManualState() != false) throw new InvalidOperationException(L.T("Состояние записи изменилось. Повторите проверку."));
             requestedAt = DateTime.UtcNow;
-            if (!Keyboard.Toggle(keys)) throw new InvalidOperationException("Windows не приняла команду записи.");
+            if (!Keyboard.Toggle(keys)) throw new InvalidOperationException(L.T("Windows не приняла команду записи."));
             for (int i = 0; i < 30; i++)
             {
                 await Task.Delay(200);
@@ -69,47 +69,47 @@ namespace ReplayWatcher
                     string evidence = CaptureEvidence.Tail(CaptureEvidence.CorePath);
                     VideoPath = CaptureEvidence.FindManualPath(evidence);
                     if (VideoPath != null && File.Exists(VideoPath) && File.GetCreationTimeUtc(VideoPath) < requestedAt.AddSeconds(-2)) VideoPath = null;
-                    Storage.Log("Пробная запись NVIDIA запущена"); return;
+                    Storage.Log(L.T("Пробная запись NVIDIA запущена")); return;
                 }
             }
-            throw new InvalidOperationException("NVIDIA не подтвердила запуск. Возможно, захват заблокирован защищённым содержимым.");
+            throw new InvalidOperationException(L.T("NVIDIA не подтвердила запуск. Возможно, захват заблокирован защищённым содержимым."));
         }
         internal async Task<string> Stop()
         {
             if (!OwnsRecording) return VideoPath;
             bool? current = CaptureEvidence.ManualState();
-            if (!current.HasValue) throw new InvalidOperationException("Состояние записи недоступно. Остановите запись через оверлей NVIDIA.");
+            if (!current.HasValue) throw new InvalidOperationException(L.T("Состояние записи недоступно. Остановите запись через оверлей NVIDIA."));
             if (current.Value)
             {
                 string activePath = CaptureEvidence.FindManualPath(CaptureEvidence.Tail(CaptureEvidence.CorePath));
                 if (VideoPath != null && activePath != null && !String.Equals(Path.GetFullPath(VideoPath), Path.GetFullPath(activePath), StringComparison.OrdinalIgnoreCase))
                 {
                     OwnsRecording = false;
-                    throw new InvalidOperationException("Пробная запись уже завершена, а сейчас идёт другая запись NVIDIA. Её приложение не остановит.");
+                    throw new InvalidOperationException(L.T("Пробная запись уже завершена, а сейчас идёт другая запись NVIDIA. Её приложение не остановит."));
                 }
-                if (!Keyboard.Ready(keys)) throw new InvalidOperationException("Отпустите служебные клавиши и нажмите «Остановить» снова.");
-                if (CaptureEvidence.ManualState() == true && !Keyboard.Toggle(keys)) throw new InvalidOperationException("Windows не приняла команду остановки.");
+                if (!Keyboard.Ready(keys)) throw new InvalidOperationException(L.T("Отпустите служебные клавиши и нажмите «Остановить» снова."));
+                if (CaptureEvidence.ManualState() == true && !Keyboard.Toggle(keys)) throw new InvalidOperationException(L.T("Windows не приняла команду остановки."));
             }
             for (int i = 0; i < 40; i++)
             {
                 await Task.Delay(200);
                 if (CaptureEvidence.ManualState() == false) { OwnsRecording = false; break; }
             }
-            if (OwnsRecording) throw new InvalidOperationException("NVIDIA пока не подтвердила остановку. Проверьте оверлей.");
-            Storage.Log("Пробная запись NVIDIA остановлена");
+            if (OwnsRecording) throw new InvalidOperationException(L.T("NVIDIA пока не подтвердила остановку. Проверьте оверлей."));
+            Storage.Log(L.T("Пробная запись NVIDIA остановлена"));
             if (VideoPath == null)
             {
                 string candidate = CaptureEvidence.FindManualPath(CaptureEvidence.Tail(CaptureEvidence.CorePath));
                 if (candidate != null && File.Exists(candidate) && File.GetCreationTimeUtc(candidate) >= requestedAt.AddSeconds(-2)) VideoPath = candidate;
             }
-            if (VideoPath == null) throw new IOException("Запись завершена, но путь к ролику не получен. Его можно найти в галерее NVIDIA.");
+            if (VideoPath == null) throw new IOException(L.T("Запись завершена, но путь к ролику не получен. Его можно найти в галерее NVIDIA."));
             long previous = -1;
             for (int i = 0; i < 50; i++)
             {
                 await Task.Delay(200);
                 try { var file = new FileInfo(VideoPath); if (file.Exists && file.Length > 0 && file.Length == previous) { using (File.Open(VideoPath, FileMode.Open, FileAccess.Read, FileShare.Read)) return VideoPath; } previous = file.Exists ? file.Length : -1; } catch (IOException) { }
             }
-            throw new IOException("Ролик ещё сохраняется. Откройте его позже в галерее NVIDIA.");
+            throw new IOException(L.T("Ролик ещё сохраняется. Откройте его позже в галерее NVIDIA."));
         }
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -12,7 +12,8 @@ namespace ReplayWatcher
         public bool AutoRestore { get; set; }
         public bool MicrophoneMonitoring { get; set; }
         public string MicrophoneId { get; set; }
-        public Settings() { AutoRestore = true; MicrophoneId = ""; }
+        public string Language { get; set; }
+        public Settings() { AutoRestore = true; MicrophoneId = ""; Language = "ru"; }
     }
 
     internal static class Storage

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -14,14 +14,14 @@ namespace ReplayWatcher
         internal string Error;
         internal bool Truncated;
         internal bool HasSignal { get { return Peak >= 0.005 && Rms >= 0.0001; } }
-        public override string ToString() { return "Аудиодорожка " + Number + (Error != null ? " — не прочитана" : HasSignal ? " — звук есть" : " — тишина / очень тихо"); }
+        public override string ToString() { return L.T("Аудиодорожка ") + Number + (Error != null ? L.T(" — не прочитана") : HasSignal ? L.T(" — звук есть") : L.T(" — тишина / очень тихо")); }
     }
     internal static class ClipAnalysis
     {
         internal static List<AudioTrack> Read(string file, CancellationToken cancellation)
         {
             // Only existing local files chosen by the user; no URLs or network shares.
-            if (!Path.IsPathRooted(file) || file.StartsWith(@"\\") || !File.Exists(file)) throw new IOException("Выберите существующий локальный видеофайл.");
+            if (!Path.IsPathRooted(file) || file.StartsWith(@"\\") || !File.Exists(file)) throw new IOException(L.T("Выберите существующий локальный видеофайл."));
             MediaFoundationApi.Startup();
             List<int> indexes = new List<int>(); IMFSourceReader reader = null;
             try
@@ -66,7 +66,7 @@ namespace ReplayWatcher
                 reader.SetCurrentMediaType(index, IntPtr.Zero, pcm.MediaFoundationObject);
                 reader.GetCurrentMediaType(index, out output);
                 MediaType format = new MediaType(output);
-                if (format.BitsPerSample != 16 || format.SubType != AudioSubtypes.MFAudioFormat_PCM) throw new NotSupportedException("Декодер не предоставил PCM 16 bit.");
+                if (format.BitsPerSample != 16 || format.SubType != AudioSubtypes.MFAudioFormat_PCM) throw new NotSupportedException(L.T("Декодер не предоставил PCM 16 bit."));
                 track.Channels = format.ChannelCount; track.SampleRate = format.SampleRate;
                 if (outputPath != null) wave = new NAudio.Wave.WaveFileWriter(outputPath, new NAudio.Wave.WaveFormat(track.SampleRate, 16, track.Channels));
                 long count = 0; double squareSum = 0; int emptySamples = 0;
@@ -79,8 +79,8 @@ namespace ReplayWatcher
                         int actual; MF_SOURCE_READER_FLAG flags; ulong timestamp;
                         reader.ReadSample(index, 0, out actual, out flags, out timestamp, out sample);
                         if ((flags & MF_SOURCE_READER_FLAG.MF_SOURCE_READERF_ENDOFSTREAM) != 0) break;
-                        if (((int)flags & 1) != 0) throw new InvalidDataException("Ошибка декодирования аудио.");
-                        if (sample == null) { if (++emptySamples > 100) throw new InvalidDataException("Декодер не возвращает аудиоданные."); continue; }
+                        if (((int)flags & 1) != 0) throw new InvalidDataException(L.T("Ошибка декодирования аудио."));
+                        if (sample == null) { if (++emptySamples > 100) throw new InvalidDataException(L.T("Декодер не возвращает аудиоданные.")); continue; }
                         emptySamples = 0; sample.ConvertToContiguousBuffer(out buffer);
                         IntPtr pointer; int maximum, length; buffer.Lock(out pointer, out maximum, out length); locked = true;
                         byte[] bytes = new byte[length]; Marshal.Copy(pointer, bytes, 0, length);
