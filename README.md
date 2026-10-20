@@ -1,142 +1,79 @@
-﻿# Replay Watcher 0.3.8
+# Replay Watcher 0.3.8
 
-Простое приложение для Windows: восстанавливает NVIDIA Instant Replay после отключения и, по желанию, проверяет микрофон.
+A simple Windows app that restores NVIDIA Instant Replay after it turns off and optionally checks your microphone.
 
 Made by Kykystas with the help of AI
 
-**Статус: тестовая portable-версия.** Приложение не связано с NVIDIA и использует недокументированные данные оверлея. Интерфейс на русском языке, в красно-чёрных цветах. Значок приложения — зелёный пиксельный хамелеон.
+**Status: portable preview release.** This project is not affiliated with NVIDIA and uses undocumented overlay data. The app currently has a Russian-language interface, a red-and-black theme, and a green pixel-art chameleon icon.
 
-## Запуск
+## Getting started
 
-Распакуйте **всю** папку приложения и запустите `ReplayWatcher.exe`. Два файла NAudio DLL должны лежать рядом с EXE. Права администратора не нужны. Требуется Windows 10/11 x64, .NET Framework 4.8, NVIDIA App или GeForce Experience с включённым оверлеем. Для проверки видео используются штатные кодеки Windows Media Foundation; в редакциях Windows N может потребоваться Media Feature Pack.
+Extract the **entire** archive and run `ReplayWatcher.exe`. Both NAudio DLL files must remain next to the EXE. Administrator privileges are not required.
 
-При первом запуске автовосстановление повтора включено, проверка микрофона выключена. Автозапуск Windows включается отдельно флажком в приложении. Если Windows или антивирус блокируют файл, сначала прочитайте раздел «Предупреждения Windows и антивирусов» ниже.
+Requirements: Windows 10/11 x64, .NET Framework 4.8, and NVIDIA App or GeForce Experience with the overlay enabled. Audio playback uses Windows Media Foundation codecs; Windows N editions may require the Media Feature Pack.
 
-Приложение само ищет запущенный NVIDIA Overlay / NVIDIA Share, стандартные папки установки и записи установщика Windows. Сочетание включения Instant Replay и папка клипов читаются из настроек NVIDIA. Имя пользователя, диск и путь установки в код не зашиты.
+On first launch, automatic replay recovery is enabled and microphone monitoring is disabled. Windows startup can be enabled separately in the app. If Windows or an antivirus blocks the file, read the Windows and antivirus warnings section below.
 
-Поиск учитывает NVIDIA App и GeForce Experience, Program Files обеих разрядностей, пользовательские и системные записи установщика. Нестандартный путь берётся из запущенного процесса или InstallLocation. Автотесты проверяют другой диск, кириллицу в пути и отсутствие установки. Проверка на всех компьютерах не проводилась: требуется совместимая Windows и оверлей NVIDIA, а внутренние форматы NVIDIA могут меняться.
+## Instant Replay
 
-## Повтор
+- Checks replay status every 2 seconds and attempts recovery after replay has been off for a few seconds.
+- A manual check immediately refreshes NVIDIA status and connected microphones when microphone monitoring is enabled. The footer shows the time and result; the automatic check time updates every 2 seconds.
+- Recovery attempts are limited to once every 10 seconds.
+- No toggle is sent when replay is already on or its status is unknown.
+- Keyboard input is postponed while modifier keys are held or the screen is locked.
+- Automatic recovery can be turned off.
+- The Windows startup option creates a shortcut in the current user's Startup folder.
+- Closing the window minimizes the app to the system tray. Use the exit button to quit.
+- Tray icon: a **green chameleon** means replay is on, **red** means it is off, and **gray** means its status is unknown or checking is unavailable. Hover over the icon for a status tooltip.
 
-- Проверка каждые 2 секунды; при выключении — попытка восстановления через несколько секунд.
-- «Проверить сейчас» немедленно перечитывает состояние NVIDIA и обновляет подключённые микрофоны, если их проверка включена. Внизу окна появляются время и результат ручной проверки; время автоматической проверки обновляется каждые 2 секунды.
-- Повторные попытки — не чаще одного раза в 10 секунд.
-- Когда повтор включён либо его состояние неизвестно, переключатель не отправляется.
-- При удержании служебных клавиш или блокировке экрана ввод откладывается.
-- «Автоматически включать повтор» можно отключить.
-- «Запускать вместе с Windows» создаёт пользовательский ярлык автозагрузки.
-- Закрытие окна сворачивает приложение в трей. Для завершения есть кнопка «Выйти».
-- Значок в трее: зелёный хамелеон — повтор включён, красный — выключен, серый — состояние неизвестно или проверка недоступна. Подсказка при наведении поясняет состояние.
+The NVIDIA flag `{1B1D3DAA-601D-49E5-8508-81736CA28C6D}` under `HKCU\Software\NVIDIA Corporation\Global\ShadowPlay\NVSPCAPS` is undocumented. It has been checked with NVIDIA App 11.0.7; compatibility with other versions is not guaranteed. Finding an installation does not guarantee compatibility with this flag. Values other than binary 0/1 are treated as unknown. The `IsShadowPlayEnabled` and `irEnabled` preferences are not used as evidence of an active replay buffer.
 
-Используемый флаг NVIDIA `{1B1D3DAA-601D-49E5-8508-81736CA28C6D}` в `HKCU\Software\NVIDIA Corporation\Global\ShadowPlay\NVSPCAPS` — недокументированный. Он проверен на NVIDIA App 11.0.7; работа на другой версии не гарантирована. Наличие установки определяется автоматически, но это не гарантирует совместимость флага. Значения, отличные от бинарных 0/1, считаются неизвестными. Пользовательские предпочтения `IsShadowPlayEnabled` и `irEnabled` не используются как доказательство работающей записи.
+The app does not bypass DRM. While Spotify, protected video, or an active computer-control session blocks NVIDIA capture, replay may turn off again immediately. Recovery attempts continue after the block is removed. Hidden helper windows do not block the app's recovery logic.
 
-Приложение не снимает защиту DRM. Пока Spotify, защищённое видео или активный сеанс управления компьютером блокируют NVIDIA, повтор может сразу отключаться. Попытки продолжаются после снятия блокировки. Служебные невидимые окна не блокируют логику приложения.
+## Optional microphone monitoring
 
-## Необязательная проверка микрофона
+**Disabled by default.** When enabled, the app reads Windows Core Audio meters: the selected microphone's level and mute state, active NVIDIA capture sessions, and their signal levels. Monitoring does not open a separate audio recording, save your voice, or transmit audio. Turning monitoring off releases the devices and stops polling them.
 
-По умолчанию **выключена**. При включении приложение читает индикаторы Windows Core Audio: уровень выбранного микрофона, mute, активные сеансы захвата NVIDIA и уровень в этих сеансах. Оно не открывает собственную аудиозапись, не сохраняет голос и не пересылает звук. Выключение проверки освобождает объекты устройств и прекращает их опрос.
+### Record and listen to a test
 
-«Авто» предпочитает устройство с активным сеансом NVIDIA, затем — микрофон Windows по умолчанию. Устройство можно выбрать вручную. Если оно отключено, приложение сообщает об этом и не подменяет выбор другим микрофоном.
+The recording test window provides three actions:
 
-Тишина сама по себе не считается неисправностью. Активный сеанс NVIDIA подтверждает использование микрофона; ненулевой индикатор в нём подтверждает сигнал на входе этого сеанса. **Ни один из этих признаков не доказывает наличие голоса в закодированном видео.** Эксклюзивный режим или особенности драйвера могут не предоставлять показания.
+1. **Start recording** starts a regular NVIDIA recording. Screen and audio capture follow NVIDIA settings, including the microphone selected there. Choosing a device for the main window's meter does not change NVIDIA's microphone.
+2. **Stop** finishes the test recording started by the app and waits for the video to be saved. Recording stops automatically after 30 seconds.
+3. **Listen** plays the saved video's audio inside the app. Pressing it again stops playback. When there are two audio tracks, the second is selected by default because NVIDIA commonly uses it for the microphone. This is an assumption based on track order, not source detection; you can select another track.
 
-В интерфейсе две независимые строки: «Сигнал микрофона» показывает текущий входящий звук выбранного устройства, «Сигнал в NVIDIA» — текущий звук в его сеансе NVIDIA. Зелёная точка означает сигнал выше порога, серая — тишину либо выключенную проверку, жёлтая — отключённый микрофон, отсутствие сеанса или недоступное состояние. Текст рядом поясняет причину. Показания обновляются каждые 0,2 секунды без удержания статуса «слышен» на 5 секунд.
+The video stays in NVIDIA's normal recording folder and is not uploaded. To play a selected audio track, the app temporarily decodes it into a local WAV file, which is deleted after playback or when the test window closes. A crash may leave the temporary WAV in the Temp folder. Listening lets you check your actual voice: a nonzero audio level alone does not prove that the microphone was recorded.
 
-### Записать и прослушать проверку
+The recording test is available independently of background microphone monitoring. Automatic Instant Replay toggle commands are paused while the test window is open and resume when it closes.
 
-Кнопка «Записать и прослушать проверку» открывает окно с тремя действиями:
+## Data and privacy
 
-1. **Начать запись** — запускает обычную запись NVIDIA. Записывается экран и звук согласно настройкам NVIDIA, включая выбранный там микрофон. Выбор устройства для индикатора в главном окне не меняет микрофон NVIDIA.
-2. **Остановить** — завершает именно запущенную приложением пробную запись и ожидает сохранения ролика. Автостоп — через 30 секунд.
-3. **Прослушать** — воспроизводит звук из сохранённого видео прямо в приложении; повторное нажатие останавливает воспроизведение. При двух аудиодорожках по умолчанию выбрана вторая, обычно используемая NVIDIA для микрофона. Это предположение по порядку, а не автоматическое распознавание источника: можно выбрать другую дорожку.
+Settings and logs are stored in `data/` next to the app. If that folder is not writable, they are stored in the user's Local AppData instead. The diagnostics dialog shows the exact location. Logs contain no audio and do not record typed text.
 
-Приложение читает фактические уведомления активных сеансов и изменения `manual[...]` в `CaptureCore.log`, а не настройки включённого оверлея. При уже идущей ручной записи оно отказывается запускать проверку. При неизвестном состоянии оно не посылает переключение. Этот внутренний формат NVIDIA также может измениться между версиями. Закрытие окна проверки во время записи сначала пытается её остановить. Если команда остановки не подтверждена, окно сообщает об этом и не закрывается молча.
+Only the build script uses the internet to download pinned dependencies; the application itself makes no network requests. A diagnostic file created with `--diagnose` may contain local paths and a device name, so review it before sharing. The normal recording test creates a video only after you explicitly start recording.
 
-Ролик остаётся в обычной папке записей NVIDIA; в интернет он не отправляется. Для воспроизведения выбранная аудиодорожка временно декодируется в локальный WAV; этот временный файл удаляется после воспроизведения/закрытия проверки. После аварийного завершения процесса временный WAV может остаться в папке Temp. Ручное прослушивание позволяет проверить именно свой голос: один лишь ненулевой уровень аудио не выдаётся за доказательство записи микрофона.
+Current status is kept in memory: `status.txt` is no longer created or updated. A file left by an older version is not used. Events are written to `watcher.log`; once it exceeds 1 MB, the previous log is rotated to `watcher.log.previous`.
 
-Проверка записи доступна отдельно от фонового мониторинга микрофона. Во время открытого окна проверки автоматические нажатия переключателя Instant Replay приостановлены; после закрытия возобновляются.
+## Windows and antivirus warnings
 
-## Данные и приватность
+### SmartScreen and code signing
 
-Настройки и журнал хранятся в `data/` рядом с приложением. Если папка недоступна для записи — в пользовательской Local AppData. Точный путь есть в «Диагностике». Журнал не содержит аудио и не записывает вводимый текст. Интернет используется только скриптом сборки для получения закреплённых пакетов; приложение сетевых запросов не выполняет. Диагностический файл, создаваемый вручную параметром `--diagnose`, может содержать локальные пути и имя устройства; его не следует публиковать без проверки. Пробная запись создаёт обычный ролик NVIDIA только по явному нажатию «Начать запись».
+Version 0.3.8 **does not have a publisher's digital signature**. A "Windows protected your PC" warning about an unrecognized app is a SmartScreen reputation warning. It is not, by itself, a detection of a specific virus, and it does not establish that a file is safe. Microsoft considers the reputation of both the file and its publisher; even a valid signature does not guarantee that a new build will show no warnings. [Microsoft's explanation](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation).
 
-Текущий статус хранится в памяти: `status.txt` больше не создаётся и не обновляется. Старый файл от предыдущих версий, если остался, приложением не используется. События пишутся в `watcher.log`; при размере более 1 МБ предыдущий журнал заменяется файлом `watcher.log.previous`.
+### What the app does
 
-## Предупреждения Windows и антивирусов
+- Reads NVIDIA settings and running-process information to find the overlay and configured hotkeys.
+- Sends the configured hotkeys through Windows `SendInput` to control replay and explicitly requested test recordings.
+- Checks modifier-key states with `GetAsyncKeyState` to avoid sending shortcuts while keys are already held. Typed text is not recorded.
+- Reads microphone and NVIDIA audio-session levels when monitoring is enabled.
+- Creates a normal startup shortcut when you enable that option. Administrator privileges are not required.
 
-### SmartScreen и цифровая подпись
+## License
 
-У версии 0.3.8 **нет цифровой подписи издателя**. Сообщение «Система Windows защитила ваш компьютер» об неизвестном приложении относится к проверке репутации SmartScreen. Оно само по себе не является обнаружением конкретного вируса и не доказывает безопасность файла. Microsoft учитывает репутацию файла и издателя; даже действительная подпись не гарантирует отсутствия предупреждений у новой сборки. [Объяснение Microsoft](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation).
+MIT License. Copyright (c) 2026 Kykystas. See `LICENSE` for the full license and `THIRD-PARTY-NOTICES.txt` for third-party notices.
 
-### Известный результат VirusTotal
+## Changes in 0.3.8
 
-20 октября 2026 года предоставлен скриншот отчёта **3/71** для `ReplayWatcher.exe` версии **0.3.3**: Bkav Pro, SecureAge и McAfee Scanner отметили файл. Версия установлена по точному совпадению SHA-256 с сохранённой сборкой:
-
-```text
-7C682B123D798D2E62F71E903D4BF2001679167A3E8FB1AC82175490F934E49E
-```
-
-Этот результат относится к конкретному файлу 0.3.3; он не является отчётом о версии 0.3.8. На момент обновления README подтверждения ложного срабатывания от этих производителей нет. Небольшое число срабатываний не позволяет автоматически признать файл безопасным. VirusTotal собирает результаты независимых движков; оспаривать обнаружения нужно у соответствующих производителей. [Инструкция VirusTotal](https://docs.virustotal.com/docs/false-positive).
-
-### Что делает программа
-
-- Читает настройки NVIDIA и информацию о запущенных процессах, чтобы найти оверлей и горячие клавиши.
-- Отправляет настроенные сочетания клавиш через Windows `SendInput` для управления повтором и явно запрошенной пробной записью.
-- Проверяет состояние служебных клавиш через `GetAsyncKeyState`, чтобы не отправлять сочетание поверх удерживаемых клавиш. Вводимый текст не записывается.
-- При включённом мониторинге читает уровень микрофона и его аудиосеанс NVIDIA.
-- По флажку пользователя создаёт обычный ярлык автозагрузки. Не требует прав администратора.
-
-При просмотре текущих исходников сетевой отправки данных, загрузки исполняемого кода, обфускации и изменения настроек антивируса не обнаружено. Это ограниченная проверка кода, а не независимый аудит или заключение антивирусной лаборатории. Причина конкретных обнаружений не установлена; использование автоматического ввода и отсутствие подписи не доказывают, что именно они вызвали эти срабатывания.
-
-### Как проверить файл
-
-1. Проверяйте именно ту версию EXE, которую собираетесь запускать. Команда из папки распакованного приложения: `Get-FileHash .\ReplayWatcher.exe -Algorithm SHA256`.
-2. Сравните результат с `SHA256SUMS.txt` в архиве. Совпадение подтверждает целостность относительно этого списка, но не является доказательством безопасности или подписью издателя.
-3. Просмотрите полный отчёт антивируса, включая имя угрозы и поведение файла. Обновление README не меняет вердикты лабораторий.
-4. Если Defender сообщает о конкретной угрозе, не запускайте файл до выяснения причин. Файл можно передать на анализ через [Microsoft Security Intelligence](https://www.microsoft.com/en-us/wdsi/filesubmission); это передача файла сторонней организации. Проверка угрозы не гарантирует снятия предупреждения SmartScreen о репутации.
-5. При обнаружениях VirusTotal запросите проверку у производителей, отметивших файл. В обращении укажите версию, SHA-256, имя обнаружения и ссылку на отчёт.
-
-Не отключайте защиту Windows и не добавляйте программу в исключения для обхода предупреждения. До выяснения причин обнаружений выпуск следует считать тестовым.
-
-Не запускайте одновременно старую версию Watcher или другую утилиту автопереключения NVIDIA.
-
-## Сборка
-
-На Windows x64 с .NET Framework 4.8:
-
-```powershell
-.\build.ps1 -Test -Preview
-```
-
-Скрипт использует установленный в Windows компилятор C#, получает NAudio Core / WASAPI 2.2.1 из официального NuGet, проверяет SHA-256 и собирает `dist/`. `build-icon.ps1` готовит иконку из `assets/chameleon.png`; маленькие ICO-кадры сохраняются в формате DIB для совместимости с .NET Framework. Визуальный проект — `ReplayWatcher.csproj`.
-
-Все 28 встроенных проверок прошли для текущей сборки: политика восстановления, неизвестные состояния, сочетания клавиш, сохранение настроек, Windows-отрисовка трёх цветов значка и декодирование синтетического аудио. Тесты не включают/выключают NVIDIA и не слушают микрофон. Успешные тесты функциональности не являются антивирусной проверкой.
-
-Параметры: `--background`, `--self-test`, `--diagnose`, `--diagnose --microphone`, `--preview`, `--preview --microphone`. Последние два создают демонстрационный снимок интерфейса и не запускают мониторинг. Разработческий `--recording-smoke-test`, в отличие от обычных тестов, действительно создаёт короткую запись NVIDIA, проверяет остановку, декодирование дорожек и инициализацию вывода звука. Самостоятельно он не воспроизводит записанный голос.
-
-Автозапуск удаляется снятием соответствующего флажка. Для удаления завершите приложение и удалите его папку; данные в резервной Local AppData, если использовались, удаляются отдельно.
-
-Исходный код и portable-сборка подготовлены для дальнейшей публикации. Цифровой подписи издателя пока нет.
-
-Для подготовки архивов после сборки запустите `./package.ps1`. Скрипт использует явный список разрешённых файлов, проверяет исходники на пользовательские пути и некоторые признаки секретов, создаёт `SHA256SUMS.txt` и сверяет содержимое ZIP со списком. В portable-архив попадают EXE, две DLL, README, лицензия, уведомления сторонних библиотек и контрольные суммы. `.gitignore` исключает сборки, пакеты, журналы, локальные настройки, диагностику, резервные копии и медиа. Эти правила не удаляют файлы, уже добавленные в историю Git; перед первой публикацией нужно проверить индекс и историю, если репозиторий создавался отдельно.
-
-## Проверка на другом компьютере
-
-1. Распакуйте ZIP целиком в отдельную папку, например в «Документы». Не запускайте EXE прямо из архива.
-2. Установите или откройте NVIDIA App / GeForce Experience, включите оверлей и Instant Replay, затем запустите `ReplayWatcher.exe`.
-3. Убедитесь, что приложение нашло NVIDIA и показывает «Повтор включён». Нажмите «Проверить сейчас» и проверьте время результата.
-4. Выключите Instant Replay в оверлее. При включённом автовосстановлении приложение должно вернуть его через несколько секунд. Если захват блокирует защищённый контент, сначала закройте этот контент.
-5. При желании включите проверку микрофона, выберите устройство и проверьте оба индикатора во время речи. Кнопкой «Записать и прослушать проверку» запишите несколько слов, остановите запись и прослушайте нужную дорожку.
-6. Если проверяете автозапуск, оставьте приложение в постоянной папке, включите «Запускать вместе с Windows» и проверьте запуск после входа в Windows. Для удаления сначала снимите этот флажок и завершите приложение через «Выйти».
-
-Проверка микрофона в новом экземпляре по умолчанию выключена. На другом компьютере создаются собственные настройки. Пробное видео остаётся в папке записей NVIDIA.
-
-## Лицензия
-
-MIT License. Copyright (c) 2026 Kykystas. Полный текст находится в `LICENSE`; уведомления сторонних библиотек — в `THIRD-PARTY-NOTICES.txt`.
-
-## Изменения в 0.3.8
-
-- Исправлена порча маленьких иконок в .NET Framework: ICO использует DIB-кадры.
-- Добавлены проверки отрисовки значка средствами Windows для зелёного, красного и серого состояния.
-- Обновлена документация по установке, приватности и предупреждениям антивирусов. В portable-архив добавлен список SHA-256.
+- Fixed corrupted small icons in .NET Framework by using DIB frames in ICO files.
+- Added Windows rendering checks for the green, red, and gray tray icons.
+- Updated installation, privacy, and antivirus-warning documentation. Added a SHA-256 checksum list to the portable archive.
