@@ -1,0 +1,25 @@
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <AssemblyName>ReplayWatcher</AssemblyName>
+    <RootNamespace>ReplayWatcher</RootNamespace>
+    <OutputPath>dist\</OutputPath>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>5</LangVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>assets\ReplayWatcher.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System"/><Reference Include="System.Core"/>
+    <Reference Include="System.Drawing"/><Reference Include="System.Windows.Forms"/>
+    <Reference Include="System.Web.Extensions"/><Reference Include="Microsoft.CSharp"/>
+    <Reference Include="netstandard"/>
+    <Reference Include="NAudio.Core"><HintPath>lib\naudio.core\lib\netstandard2.0\NAudio.Core.dll</HintPath><Private>True</Private></Reference>
+    <Reference Include="NAudio.Wasapi"><HintPath>lib\naudio.wasapi\lib\netstandard2.0\NAudio.Wasapi.dll</HintPath><Private>True</Private></Reference>
+    <Compile Include="src\*.cs"/>
+    <EmbeddedResource Include="assets\ReplayWatcher.ico"><LogicalName>ReplayWatcher.AppIcon</LogicalName></EmbeddedResource>
+    <None Include="assets\chameleon.png"/>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets"/>
+</Project>
