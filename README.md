@@ -2,6 +2,8 @@
 
 A simple Windows app that restores NVIDIA Instant Replay after it turns off and optionally checks your microphone.
 
+Mostly made to reenable Instant Replay after DRM apps (Spotify ort Kinopoisk) disables it.
+
 Made by Kykystas with the help of AI
 
 **Status: portable preview release.** This project is not affiliated with NVIDIA and uses undocumented overlay data. The app has Russian and English interfaces, a red-and-black theme, and a green pixel-art chameleon icon.
